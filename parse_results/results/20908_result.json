@@ -1,0 +1,52 @@
+{
+  "insuCd": "20908",
+  "filename": "UW20908.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:15.059205",
+  "best": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "analysis": {
+    "insuCd": "20908",
+    "success": true,
+    "method": "unknown",
+    "terms": {
+      "insuTerm": false,
+      "payTerm": false,
+      "ageRange": false,
+      "renew": false
+    },
+    "codes_count": 0,
+    "has_error": false
+  }
+}

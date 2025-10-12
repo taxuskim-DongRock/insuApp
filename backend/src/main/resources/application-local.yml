@@ -1,0 +1,45 @@
+server:
+  port: 8081
+  error:
+    include-message: always
+    include-binding-errors: always
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: insu-backend
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    # XE / PDB 환경: 서비스 이름 방식(권장) - UTF-8 명시적 설정
+    url: jdbc:oracle:thin:@//localhost:1521/XEPDB1?useUnicode=true&characterEncoding=UTF-8&oracle.jdbc.J2EE13Compliant=true
+    username: devown
+    password: own20250101
+  jackson:
+    serialization:
+      INDENT_OUTPUT: true
+    default-property-inclusion: non_null
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Seoul
+
+mybatis:
+  mapper-locations: classpath*:/mappers/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+
+insu:
+  pdf-dir: 'C:\insu_app\insuPdf'
+
+logging:
+  level:
+    com.example.insu.service.ProductService: DEBUG
+    com.example.insu.util.PdfParser: DEBUG
+    com.example.insu.mapper: DEBUG
+    org.mybatis: DEBUG
+    org.apache.ibatis: DEBUG
+

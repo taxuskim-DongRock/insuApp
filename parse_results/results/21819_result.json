@@ -1,0 +1,67 @@
+{
+  "insuCd": "21819",
+  "filename": "UW21819.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "codes": {
+      "21820": "구분 1형(표준형 )2형\n(해약환급금\n미지급형 V2)3형\n(해약환급금\n일부지급형 )\n(무)흥국생명\n생활비주는종신보험1종(생활자금집중형 )",
+      "21821": "21819",
+      "21823": "2종(사망보장강화형 )",
+      "21824": "21822",
+      "82630": "(무)소액암종신보장특약",
+      "21819 21821\n2종(사망보장강화형 ) 21823 21822 21824\n(무)소액암종신보장특약 82630 82629 -": "21820"
+    },
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:37.064824",
+  "best": {
+    "codes": {
+      "21820": "구분 1형(표준형 )2형\n(해약환급금\n미지급형 V2)3형\n(해약환급금\n일부지급형 )\n(무)흥국생명\n생활비주는종신보험1종(생활자금집중형 )",
+      "21821": "21819",
+      "21823": "2종(사망보장강화형 )",
+      "21824": "21822",
+      "82630": "(무)소액암종신보장특약",
+      "21819 21821\n2종(사망보장강화형 ) 21823 21822 21824\n(무)소액암종신보장특약 82630 82629 -": "21820"
+    },
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "analysis": {
+    "insuCd": "21819",
+    "success": true,
+    "method": "hybrid",
+    "terms": {
+      "insuTerm": false,
+      "payTerm": false,
+      "ageRange": false,
+      "renew": false
+    },
+    "codes_count": 6,
+    "has_error": false
+  }
+}

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.insu.mapper.InsuMapper">
+  <resultMap id="PremRateMap" type="com.example.insu.mapper.PremRateRow">
+    <result property="stndAmt" column="ISRC_STND_CNTA_AMT_NB9" jdbcType="DECIMAL"/>
+    <result property="manRate" column="INDI_MAN_ISRC_NB7" jdbcType="DECIMAL"/>
+    <result property="fmlRate" column="INDI_FML_ISRC_NB7" jdbcType="DECIMAL"/>
+  </resultMap>
+
+  <!-- 존재 여부 체크(선택) -->
+  <select id="existsPremRate" parameterType="string" resultType="int">
+    SELECT COUNT(1)
+    FROM RVT_PREM_RATE
+    WHERE ISRC_TBL_INSU_CD = #{insuCd}
+      AND USE_YN = 'Y'
+  </select>
+
+  <!-- 정계산용 단일행 조회 -->
+  <select id="selectPremRate" resultMap="PremRateMap">
+    SELECT
+      ISRC_STND_CNTA_AMT_NB9,
+      INDI_MAN_ISRC_NB7,
+      INDI_FML_ISRC_NB7
+    FROM RVT_PREM_RATE
+    WHERE ISRC_TBL_INSU_CD = #{insuCd}
+      AND ISRC_TBL_PIBO_AGE_NB3 = #{age}
+      AND ISRC_TBL_INSU_YYCT_NB3 = #{insuTerm}
+      AND ISRC_TBL_NABI_MMCT_NB3 = #{payTerm}
+      AND USE_YN = 'Y'
+  </select>
+
+  <select id="existsPremRateByInsuCd" resultType="int">
+      SELECT CASE
+              WHEN EXISTS (
+                SELECT 1
+                FROM RVT_PREM_RATE
+                WHERE ISRC_TBL_INSU_CD = #{insuCd}
+                FETCH FIRST 1 ROWS ONLY
+              ) THEN 1 ELSE 0
+            END
+      FROM DUAL
+    </select>
+
+    <select id="countPremRateByInsuCd" parameterType="string" resultType="int">
+      SELECT COUNT(1)
+      FROM RVT_PREM_RATE
+      WHERE ISRC_TBL_INSU_CD = #{insuCd}
+        AND ROWNUM = 1
+    </select>
+
+    <!-- 6-1. 준비금키 검증 (간단 버전) -->
+    <select id="countRsvKeyByInsuCd" parameterType="string" resultType="int">
+      SELECT COUNT(1)
+      FROM RVT_RSRV_KEY
+      WHERE INSU_CD = #{insuCd}
+        AND ROWNUM = 1
+    </select>
+
+    <!-- 준비금 존재 여부 검증 (간단 버전) -->
+    <select id="countRsvRateByInsuCd" parameterType="string" resultType="int">
+      SELECT COUNT(1)
+      FROM RVT_RSRV_RATE
+      WHERE RSVF_TBL_INSU_CD = #{insuCd}
+        AND ROWNUM = 1
+    </select>
+
+    <!-- 6-2. 준비금 상세 검증 (나이, 보험기간, 납입기간별) -->
+    <select id="countRsvRateByCondition" resultType="int">
+      SELECT COUNT(1)
+      FROM RVT_RSRV_RATE
+      WHERE RSVF_TBL_INSU_CD = #{insuCd}
+        AND RSVF_TBL_PIBO_AGE_NB3 = #{age}
+        AND RSVF_TBL_INSU_YYCT_NB3 = #{insuTerm}
+        AND RSVF_TBL_NABI_MMCT_NB3 = #{payTerm}
+    </select>
+
+    <!-- 6-3. 보험료 상세 검증 (나이, 보험기간, 납입기간별) -->
+    <select id="countPremRateByCondition" resultType="int">
+      SELECT COUNT(1)
+      FROM RVT_PREM_RATE
+      WHERE ISRC_TBL_INSU_CD = #{insuCd}
+        AND ISRC_TBL_PIBO_AGE_NB3 = #{age}
+        AND ISRC_TBL_INSU_YYCT_NB3 = #{insuTerm}
+        AND ISRC_TBL_NABI_MMCT_NB3 = #{payTerm}
+        AND USE_YN = 'Y'
+    </select>
+
+    <!-- 7. MIN/MAX 보험료 계산용 쿼리 -->
+    <select id="selectPremRateForMinMax" resultType="map">
+      SELECT 
+        ISRC_STND_CNTA_AMT_NB9, 
+        INDI_MAN_ISRC_NB7, 
+        INDI_FML_ISRC_NB7
+      FROM RVT_PREM_RATE
+      WHERE ISRC_TBL_INSU_CD = #{insuCd} 
+        AND ISRC_TBL_PIBO_AGE_NB3 = #{age} 
+        AND ISRC_TBL_INSU_YYCT_NB3 = #{insuTerm} 
+        AND ISRC_TBL_NABI_MMCT_NB3 = #{payTerm} 
+        AND USE_YN = 'Y'
+      FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <!-- 디버깅용: 실제 데이터 조회 -->
+    <select id="selectPremRateForDebug" resultType="map">
+      SELECT 
+        ISRC_STND_CNTA_AMT_NB9, 
+        INDI_MAN_ISRC_NB7, 
+        INDI_FML_ISRC_NB7
+      FROM RVT_PREM_RATE
+      WHERE ISRC_TBL_INSU_CD = #{insuCd} 
+        AND ISRC_TBL_PIBO_AGE_NB3 = #{age} 
+        AND ISRC_TBL_INSU_YYCT_NB3 = #{insuTerm} 
+        AND ISRC_TBL_NABI_MMCT_NB3 = #{payTerm} 
+        AND USE_YN = 'Y'
+      FETCH FIRST 1 ROWS ONLY
+    </select>
+</mapper>

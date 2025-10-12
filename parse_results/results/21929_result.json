@@ -1,0 +1,58 @@
+{
+  "insuCd": "21929",
+  "filename": "UW21929.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "insuCd": "21929",
+    "name": "1형(해약환급금 미지급형 V2) 2형(표준형 ) 3형(해약환급금 일부지급형 V2)",
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "limits": {
+      "minWon": null,
+      "maxWon": null,
+      "matchedLine": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:49.680028",
+  "best": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "analysis": {
+    "insuCd": "21929",
+    "success": true,
+    "method": "unknown",
+    "terms": {
+      "insuTerm": false,
+      "payTerm": false,
+      "ageRange": false,
+      "renew": false
+    },
+    "codes_count": 0,
+    "has_error": false
+  }
+}

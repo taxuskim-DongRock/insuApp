@@ -1,0 +1,456 @@
+{
+  "total": 26,
+  "success": 20,
+  "failed": 6,
+  "terms_extracted": {
+    "insuTerm": 14,
+    "payTerm": 20,
+    "ageRange": 20,
+    "renew": 12
+  },
+  "codes_extracted": 2123,
+  "files": [
+    {
+      "filename": "UW16932.pdf",
+      "insuCd": "16932",
+      "analysis": {
+        "insuCd": "16932",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 42,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW17027.pdf",
+      "insuCd": "17027",
+      "analysis": {
+        "insuCd": "17027",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 8,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW17037.pdf",
+      "insuCd": "17037",
+      "analysis": {
+        "insuCd": "17037",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 8,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW17147.pdf",
+      "insuCd": "17147",
+      "analysis": {
+        "insuCd": "17147",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 12,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW17153.pdf",
+      "insuCd": "17153",
+      "analysis": {
+        "insuCd": "17153",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 12,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW17212.pdf",
+      "insuCd": "17212",
+      "analysis": {
+        "insuCd": "17212",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 4,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW17215.pdf",
+      "insuCd": "17215",
+      "analysis": {
+        "insuCd": "17215",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 12,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW17232.pdf",
+      "insuCd": "17232",
+      "analysis": {
+        "insuCd": "17232",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 1,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW18108.pdf",
+      "insuCd": "18108",
+      "analysis": {
+        "insuCd": "18108",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 9,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW19771.pdf",
+      "insuCd": "19771",
+      "analysis": {
+        "insuCd": "19771",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 606,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW20307.pdf",
+      "insuCd": "20307",
+      "analysis": {
+        "insuCd": "20307",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 239,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW20908.pdf",
+      "insuCd": "20908",
+      "analysis": {
+        "insuCd": "20908",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 103,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21121.pdf",
+      "insuCd": "21121",
+      "analysis": {
+        "insuCd": "21121",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 32,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21140.pdf",
+      "insuCd": "21140",
+      "analysis": {
+        "insuCd": "21140",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 532,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21239.pdf",
+      "insuCd": "21239",
+      "analysis": {
+        "insuCd": "21239",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 92,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21385.pdf",
+      "insuCd": "21385",
+      "analysis": {
+        "insuCd": "21385",
+        "success": false,
+        "method": "unknown",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": false,
+          "ageRange": false,
+          "renew": false
+        },
+        "codes_count": 0,
+        "has_error": true
+      }
+    },
+    {
+      "filename": "UW21492.pdf",
+      "insuCd": "21492",
+      "analysis": {
+        "insuCd": "21492",
+        "success": false,
+        "method": "unknown",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": false,
+          "ageRange": false,
+          "renew": false
+        },
+        "codes_count": 0,
+        "has_error": true
+      }
+    },
+    {
+      "filename": "UW21619.pdf",
+      "insuCd": "21619",
+      "analysis": {
+        "insuCd": "21619",
+        "success": false,
+        "method": "unknown",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": false,
+          "ageRange": false,
+          "renew": false
+        },
+        "codes_count": 0,
+        "has_error": true
+      }
+    },
+    {
+      "filename": "UW21621.pdf",
+      "insuCd": "21621",
+      "analysis": {
+        "insuCd": "21621",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 12,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21815.pdf",
+      "insuCd": "21815",
+      "analysis": {
+        "insuCd": "21815",
+        "success": false,
+        "method": "unknown",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": false,
+          "ageRange": false,
+          "renew": false
+        },
+        "codes_count": 0,
+        "has_error": true
+      }
+    },
+    {
+      "filename": "UW21819.pdf",
+      "insuCd": "21819",
+      "analysis": {
+        "insuCd": "21819",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 8,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21828.pdf",
+      "insuCd": "21828",
+      "analysis": {
+        "insuCd": "21828",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": false
+        },
+        "codes_count": 382,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21843.pdf",
+      "insuCd": "21843",
+      "analysis": {
+        "insuCd": "21843",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 3,
+        "has_error": false
+      }
+    },
+    {
+      "filename": "UW21867.pdf",
+      "insuCd": "21867",
+      "analysis": {
+        "insuCd": "21867",
+        "success": false,
+        "method": "unknown",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": false,
+          "ageRange": false,
+          "renew": false
+        },
+        "codes_count": 0,
+        "has_error": true
+      }
+    },
+    {
+      "filename": "UW21893.pdf",
+      "insuCd": "21893",
+      "analysis": {
+        "insuCd": "21893",
+        "success": false,
+        "method": "unknown",
+        "terms": {
+          "insuTerm": false,
+          "payTerm": false,
+          "ageRange": false,
+          "renew": false
+        },
+        "codes_count": 0,
+        "has_error": true
+      }
+    },
+    {
+      "filename": "UW21929.pdf",
+      "insuCd": "21929",
+      "analysis": {
+        "insuCd": "21929",
+        "success": true,
+        "method": "improved",
+        "terms": {
+          "insuTerm": true,
+          "payTerm": true,
+          "ageRange": true,
+          "renew": true
+        },
+        "codes_count": 6,
+        "has_error": false
+      }
+    }
+  ]
+}

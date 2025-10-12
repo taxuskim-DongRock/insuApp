@@ -1,0 +1,106 @@
+[
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "Command '['python', 'parse_pdf_advanced.py', 'C:\\\\insu_app\\\\insuPdf\\\\UW21385.pdf', '21385']' timed out after 30 seconds",
+    "success": false
+  },
+  {
+    "error": "Command '['python', 'parse_pdf_advanced.py', 'C:\\\\insu_app\\\\insuPdf\\\\UW21492.pdf', '21492']' timed out after 30 seconds",
+    "success": false
+  },
+  {
+    "error": "Command '['python', 'parse_pdf_advanced.py', 'C:\\\\insu_app\\\\insuPdf\\\\UW21619.pdf', '21619']' timed out after 30 seconds",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "Command '['python', 'parse_pdf_advanced.py', 'C:\\\\insu_app\\\\insuPdf\\\\UW21815.pdf', '21815']' timed out after 30 seconds",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  },
+  {
+    "error": "Command '['python', 'parse_pdf_advanced.py', 'C:\\\\insu_app\\\\insuPdf\\\\UW21867.pdf', '21867']' timed out after 30 seconds",
+    "success": false
+  },
+  {
+    "error": "Command '['python', 'parse_pdf_advanced.py', 'C:\\\\insu_app\\\\insuPdf\\\\UW21893.pdf', '21893']' timed out after 30 seconds",
+    "success": false
+  },
+  {
+    "error": "the JSON object must be str, bytes or bytearray, not NoneType",
+    "success": false
+  }
+]

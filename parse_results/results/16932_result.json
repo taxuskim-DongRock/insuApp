@@ -1,0 +1,52 @@
+{
+  "insuCd": "16932",
+  "filename": "UW16932.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "(이하, ‘태아보장기간 ’",
+      "payTerm": "을 추가로 부가한다 .",
+      "ageRange": "1~10개월 전기납 태아",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "(이하, ‘태아보장기간 ’",
+      "payTerm": "을 추가로 부가한다 .",
+      "ageRange": "1~10개월 전기납 태아",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:02.803609",
+  "best": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "(이하, ‘태아보장기간 ’",
+      "payTerm": "을 추가로 부가한다 .",
+      "ageRange": "1~10개월 전기납 태아",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "analysis": {
+    "insuCd": "16932",
+    "success": true,
+    "method": "unknown",
+    "terms": {
+      "insuTerm": true,
+      "payTerm": true,
+      "ageRange": true,
+      "renew": false
+    },
+    "codes_count": 0,
+    "has_error": false
+  }
+}

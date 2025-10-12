@@ -1,0 +1,69 @@
+{
+  "insuCd": "17037",
+  "filename": "UW17037.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "codes": {
+      "21366": "주계약\n무배당 흥국생명 프리미엄드림저축보험\n적립형 거치형\n1종(단기형 )2종(수익형 )\n1종(5년만기형 ) 2종(기본형 )\n보험료 할인 적립금 가산",
+      "21368": "21367",
+      "21370": "21369",
+      "21454": "제도성 특약\n(무)신연금전환특약\n즉시형거치형\n(1형 기본형 )거치형\n(2형 무사망형 )",
+      "21456": "21455",
+      "21367 21368 21369 21370\n나": "21366",
+      "21455 21456": "21454"
+    },
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:04.302074",
+  "best": {
+    "codes": {
+      "21366": "주계약\n무배당 흥국생명 프리미엄드림저축보험\n적립형 거치형\n1종(단기형 )2종(수익형 )\n1종(5년만기형 ) 2종(기본형 )\n보험료 할인 적립금 가산",
+      "21368": "21367",
+      "21370": "21369",
+      "21454": "제도성 특약\n(무)신연금전환특약\n즉시형거치형\n(1형 기본형 )거치형\n(2형 무사망형 )",
+      "21456": "21455",
+      "21367 21368 21369 21370\n나": "21366",
+      "21455 21456": "21454"
+    },
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "analysis": {
+    "insuCd": "17037",
+    "success": true,
+    "method": "hybrid",
+    "terms": {
+      "insuTerm": false,
+      "payTerm": false,
+      "ageRange": false,
+      "renew": false
+    },
+    "codes_count": 7,
+    "has_error": false
+  }
+}

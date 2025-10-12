@@ -1,0 +1,109 @@
+# 오프라인 모드 설정
+spring:
+  profiles:
+    active: offline
+  
+  # 데이터베이스 설정 (로컬 H2)
+  datasource:
+    url: jdbc:h2:file:./data/insu_offline
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  # JPA 설정
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+  
+  # H2 콘솔 (개발용)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Ollama 설정
+ollama:
+  url: http://localhost:11434
+  timeout: 30000
+  retry-count: 3
+  
+# 로컬 모델 설정
+local-models:
+  enabled: true
+  directory: C:/insu_app/models
+  cache-directory: C:/insu_app/cache
+  
+  # 모델별 설정
+  llama:
+    model: llama3.1:8b
+    enabled: true
+    weight: 1.0
+  
+  mistral:
+    model: mistral:7b
+    enabled: true
+    weight: 1.2
+  
+  codellama:
+    model: codellama:7b
+    enabled: true
+    weight: 1.1
+
+# Caffeine 캐시 설정 (개선됨)
+spring:
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=24h,expireAfterAccess=6h,recordStats
+    cache-names:
+      - parsingCache
+
+# 레거시 캐시 설정 (참고용)
+cache:
+  enabled: true
+  directory: C:/insu_app/cache
+  max-size: 1000
+  ttl: 86400 # 24시간
+
+# 로깅 설정
+logging:
+  level:
+    com.example.insu: INFO
+    org.springframework: WARN
+  file:
+    name: C:/insu_app/logs/insu-offline.log
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# 서버 설정
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+# 보안 설정 (오프라인)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# 애플리케이션 정보
+info:
+  app:
+    name: 보험 문서 파싱 시스템 (오프라인)
+    version: 1.0.0
+    description: 로컬 LLM을 활용한 보험 문서 파싱 시스템
+    mode: offline
+    features:
+      - 로컬 LLM 실행
+      - 오프라인 처리
+      - 내부망 지원
+      - 데이터 보안

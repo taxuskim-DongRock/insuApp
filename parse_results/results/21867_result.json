@@ -1,0 +1,58 @@
+{
+  "insuCd": "21867",
+  "filename": "UW21867.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "insuCd": "21867",
+    "name": "5 고당플러스간편건강보험",
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "limits": {
+      "minWon": 2,
+      "maxWon": 2,
+      "matchedLine": "※ 주계약을 해약환급금 미지급형 V2으로 가입할 때 해약환급금 미지급형 V2이 없는 특약은 표준형으로"
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:44.268624",
+  "best": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "",
+      "payTerm": "",
+      "ageRange": "",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "analysis": {
+    "insuCd": "21867",
+    "success": true,
+    "method": "unknown",
+    "terms": {
+      "insuTerm": false,
+      "payTerm": false,
+      "ageRange": false,
+      "renew": false
+    },
+    "codes_count": 0,
+    "has_error": false
+  }
+}

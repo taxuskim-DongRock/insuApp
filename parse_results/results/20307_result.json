@@ -1,0 +1,52 @@
+{
+  "insuCd": "20307",
+  "filename": "UW20307.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "보험료 납입기간 가입나이",
+      "payTerm": "가입나이",
+      "ageRange": "1년만기 전기납 태아",
+      "renew": "형 )",
+      "specialNotes": "※ 급성심근경색증진단특약 + 허혈심장질환진단특약 가입금액 합산한도 제어"
+    },
+    "success": true
+  },
+  "ocr": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "보험료 납입기간 가입나이",
+      "payTerm": "가입나이",
+      "ageRange": "1년만기 전기납 태아",
+      "renew": "형 )",
+      "specialNotes": "※ 급성심근경색증진단특약 + 허혈심장질환진단특약 가입금액 합산한도 제어"
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:14.082081",
+  "best": {
+    "codes": {},
+    "terms": {
+      "insuTerm": "보험료 납입기간 가입나이",
+      "payTerm": "가입나이",
+      "ageRange": "1년만기 전기납 태아",
+      "renew": "형 )",
+      "specialNotes": "※ 급성심근경색증진단특약 + 허혈심장질환진단특약 가입금액 합산한도 제어"
+    },
+    "success": true
+  },
+  "analysis": {
+    "insuCd": "20307",
+    "success": true,
+    "method": "unknown",
+    "terms": {
+      "insuTerm": true,
+      "payTerm": true,
+      "ageRange": true,
+      "renew": true
+    },
+    "codes_count": 0,
+    "has_error": false
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "insuCd": "18108",
+  "filename": "UW18108.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": ", 보험료 납입기간 및 가입나이",
+      "payTerm": "및 가입나이",
+      "ageRange": "※ 보험기간 , 보험료 납입기간 및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용 기준은",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "codes": {},
+    "terms": {
+      "insuTerm": ", 보험료 납입기간 및 가입나이",
+      "payTerm": "및 가입나이",
+      "ageRange": "※ 보험기간 , 보험료 납입기간 및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용 기준은",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:08.387383",
+  "best": {
+    "codes": {},
+    "terms": {
+      "insuTerm": ", 보험료 납입기간 및 가입나이",
+      "payTerm": "및 가입나이",
+      "ageRange": "※ 보험기간 , 보험료 납입기간 및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용 기준은",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "analysis": {
+    "insuCd": "18108",
+    "success": true,
+    "method": "unknown",
+    "terms": {
+      "insuTerm": true,
+      "payTerm": true,
+      "ageRange": true,
+      "renew": false
+    },
+    "codes_count": 0,
+    "has_error": false
+  }
+}

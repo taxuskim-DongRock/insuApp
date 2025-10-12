@@ -1,0 +1,4 @@
+{
+  "error": "Command '['python', 'parse_pdf_improved.py', 'C:\\\\insu_app\\\\insuPdf\\\\UW21492.pdf', '21492']' timed out after 30 seconds",
+  "success": false
+}

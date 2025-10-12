@@ -1,0 +1,58 @@
+{
+  "insuCd": "21843",
+  "filename": "UW21843.pdf",
+  "python": {
+    "codes": {},
+    "terms": {
+      "insuTerm": ", 보험료 납입기간 및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "payTerm": "및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "ageRange": "는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "ocr": {
+    "insuCd": "21843",
+    "name": "- (무)흥국생명 해탈다비종신보험\n구분 1종(해약환급금 미지급형 V2) 2종(표준형 ) 할증\n주계약",
+    "terms": {
+      "insuTerm": ", 보험료 납입기간 및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "payTerm": "및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "ageRange": "는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "limits": {
+      "minWon": null,
+      "maxWon": null,
+      "matchedLine": ""
+    },
+    "success": true,
+    "method": "hybrid"
+  },
+  "timestamp": "2025-10-11T00:08:39.574910",
+  "best": {
+    "codes": {},
+    "terms": {
+      "insuTerm": ", 보험료 납입기간 및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "payTerm": "및 가입나이는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "ageRange": "는 기초서류상의 총 한도를 수록하였으므로 실제 판매용",
+      "renew": "",
+      "specialNotes": ""
+    },
+    "success": true
+  },
+  "analysis": {
+    "insuCd": "21843",
+    "success": true,
+    "method": "unknown",
+    "terms": {
+      "insuTerm": true,
+      "payTerm": true,
+      "ageRange": true,
+      "renew": false
+    },
+    "codes_count": 0,
+    "has_error": false
+  }
+}
