@@ -1,0 +1,31 @@
+# 최소 필수 패키지만 포함 (경량 설치용)
+
+# PDF 처리 (핵심)
+PyPDF2==3.0.1
+pdf2image==1.16.3
+
+# OCR (핵심)
+pytesseract==0.3.10
+Pillow==9.5.0
+
+# 데이터 처리 (핵심)
+pandas==2.1.1
+numpy==1.24.3
+
+# HTTP 요청 (핵심)
+requests==2.31.0
+
+# 데이터베이스 연결 (핵심)
+cx_Oracle==8.3.0
+
+# JSON 처리 (핵심)
+pydantic==2.4.2
+
+# 환경 변수 (핵심)
+python-dotenv==1.0.0
+
+# 로깅 (핵심)
+loguru==0.7.2
+
+# 유틸리티 (핵심)
+tqdm==4.66.1
