@@ -39,3 +39,9 @@ COMMIT;
 -- 5. 데이터 확인
 SELECT * FROM UW_CODE_MAPPING ORDER BY CODE;
 
+
+
+
+
+
+

@@ -115,4 +115,19 @@
         AND USE_YN = 'Y'
       FETCH FIRST 1 ROWS ONLY
     </select>
+    
+    <!-- 디버깅용: 특정 상품코드의 모든 데이터 조회 -->
+    <select id="selectAllPremRatesByInsuCd" resultType="com.example.insu.mapper.PremRateRow">
+      SELECT 
+        ISRC_TBL_PIBO_AGE_NB3 AS piboAge,
+        ISRC_TBL_INSU_YYCT_NB3 AS insuTerm,
+        ISRC_TBL_NABI_MMCT_NB3 AS payTerm,
+        ISRC_STND_CNTA_AMT_NB9 AS stndAmt,
+        INDI_MAN_ISRC_NB7 AS manRate,
+        INDI_FML_ISRC_NB7 AS fmlRate
+      FROM RVT_PREM_RATE
+      WHERE ISRC_TBL_INSU_CD = #{insuCd} 
+        AND USE_YN = 'Y'
+      ORDER BY ISRC_TBL_PIBO_AGE_NB3, ISRC_TBL_INSU_YYCT_NB3, ISRC_TBL_NABI_MMCT_NB3
+    </select>
 </mapper>
