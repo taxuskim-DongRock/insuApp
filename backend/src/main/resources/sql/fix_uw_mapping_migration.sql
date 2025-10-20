@@ -1,0 +1,211 @@
+-- ========================================
+-- UW_CODE_MAPPING → LEARNED_PATTERN 이관 수정 스크립트
+-- 오류 해결: GROUP BY와 SEQUENCE.NEXTVAL 충돌 문제
+-- ========================================
+
+-- 방법 1: 서브쿼리 사용 (권장) ⭐⭐⭐⭐⭐
+
+-- 1. 보험기간(insuTerm) 패턴 이관
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'insuTerm',
+    PERIOD_LABEL,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT DISTINCT CODE, PERIOD_LABEL
+    FROM UW_CODE_MAPPING
+    WHERE PERIOD_LABEL IS NOT NULL
+    ORDER BY CODE, PERIOD_LABEL
+);
+
+-- 2. 납입기간(payTerm) 패턴 이관
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'payTerm',
+    PAY_TERM,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT DISTINCT CODE, PAY_TERM
+    FROM UW_CODE_MAPPING
+    WHERE PAY_TERM IS NOT NULL
+    ORDER BY CODE, PAY_TERM
+);
+
+-- 3. 가입나이(ageRange) 패턴 이관 - 남자
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'ageRange',
+    ENTRY_AGE_M,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT DISTINCT CODE, ENTRY_AGE_M
+    FROM UW_CODE_MAPPING
+    WHERE ENTRY_AGE_M IS NOT NULL
+    ORDER BY CODE, ENTRY_AGE_M
+);
+
+-- 커밋
+COMMIT;
+
+-- ========================================
+-- 확인 쿼리
+-- ========================================
+
+SELECT '=== 이관 결과 확인 ===' AS INFO FROM DUAL;
+
+SELECT 
+    LEARNING_SOURCE,
+    FIELD_NAME,
+    COUNT(*) AS PATTERN_COUNT
+FROM LEARNED_PATTERN
+GROUP BY LEARNING_SOURCE, FIELD_NAME
+ORDER BY LEARNING_SOURCE, FIELD_NAME;
+
+SELECT '=== 상세 데이터 ===' AS INFO FROM DUAL;
+
+SELECT 
+    INSU_CD,
+    FIELD_NAME,
+    PATTERN_VALUE,
+    CONFIDENCE_SCORE,
+    LEARNING_SOURCE
+FROM LEARNED_PATTERN
+WHERE LEARNING_SOURCE = 'UW_MAPPING'
+ORDER BY INSU_CD, FIELD_NAME;
+
+-- ========================================
+-- 방법 2: ROW_NUMBER 사용 (대안)
+-- ========================================
+
+/*
+-- 기존 데이터 삭제 (재실행 시)
+DELETE FROM LEARNED_PATTERN WHERE LEARNING_SOURCE = 'UW_MAPPING';
+
+-- 보험기간 이관
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'insuTerm',
+    PERIOD_LABEL,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT 
+        CODE, 
+        PERIOD_LABEL,
+        ROW_NUMBER() OVER (PARTITION BY CODE, PERIOD_LABEL ORDER BY CODE) AS RN
+    FROM UW_CODE_MAPPING
+    WHERE PERIOD_LABEL IS NOT NULL
+)
+WHERE RN = 1;
+
+-- 납입기간 이관
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'payTerm',
+    PAY_TERM,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT 
+        CODE, 
+        PAY_TERM,
+        ROW_NUMBER() OVER (PARTITION BY CODE, PAY_TERM ORDER BY CODE) AS RN
+    FROM UW_CODE_MAPPING
+    WHERE PAY_TERM IS NOT NULL
+)
+WHERE RN = 1;
+
+-- 가입나이 이관
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'ageRange',
+    ENTRY_AGE_M,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT 
+        CODE, 
+        ENTRY_AGE_M,
+        ROW_NUMBER() OVER (PARTITION BY CODE, ENTRY_AGE_M ORDER BY CODE) AS RN
+    FROM UW_CODE_MAPPING
+    WHERE ENTRY_AGE_M IS NOT NULL
+)
+WHERE RN = 1;
+
+COMMIT;
+*/
+
+-- ========================================
+-- 트러블슈팅
+-- ========================================
+
+SELECT '=== 트러블슈팅 ===' AS INFO FROM DUAL;
+
+-- 1. UW_CODE_MAPPING 데이터 확인
+SELECT 'UW_CODE_MAPPING 총 건수:' AS INFO, COUNT(*) AS CNT FROM UW_CODE_MAPPING;
+
+-- 2. LEARNED_PATTERN 데이터 확인
+SELECT 'LEARNED_PATTERN 총 건수:' AS INFO, COUNT(*) AS CNT FROM LEARNED_PATTERN;
+
+-- 3. 중복 데이터 확인
+SELECT 'UW_CODE_MAPPING 중복 확인:' AS INFO FROM DUAL;
+SELECT CODE, PERIOD_LABEL, COUNT(*) AS CNT
+FROM UW_CODE_MAPPING
+WHERE PERIOD_LABEL IS NOT NULL
+GROUP BY CODE, PERIOD_LABEL
+HAVING COUNT(*) > 1;
+
+-- 4. SEQUENCE 현재 값 확인
+SELECT 'SEQUENCE 현재 값:' AS INFO FROM DUAL;
+SELECT learned_pattern_seq.CURRVAL AS CURRENT_SEQ_VALUE FROM DUAL;
+
+
+
+
+
+

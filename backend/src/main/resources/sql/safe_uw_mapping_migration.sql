@@ -1,0 +1,142 @@
+-- ========================================
+-- 안전한 UW_CODE_MAPPING 이관 스크립트 (MERGE 사용)
+-- UNIQUE 제약 조건 오류 방지 (기존 데이터 보존)
+-- ========================================
+
+-- ========================================
+-- 보험기간(insuTerm) 패턴 MERGE
+-- ========================================
+
+MERGE INTO LEARNED_PATTERN LP
+USING (
+    SELECT DISTINCT CODE, PERIOD_LABEL
+    FROM UW_CODE_MAPPING
+    WHERE PERIOD_LABEL IS NOT NULL
+) SRC
+ON (LP.INSU_CD = SRC.CODE AND LP.FIELD_NAME = 'insuTerm')
+WHEN MATCHED THEN
+    UPDATE SET 
+        PATTERN_VALUE = SRC.PERIOD_LABEL,
+        CONFIDENCE_SCORE = 100,
+        LEARNING_SOURCE = 'UW_MAPPING',
+        PRIORITY = 100,
+        UPDATED_AT = CURRENT_TIMESTAMP
+WHEN NOT MATCHED THEN
+    INSERT (
+        PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE,
+        CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE, CREATED_AT
+    ) VALUES (
+        learned_pattern_seq.NEXTVAL,
+        SRC.CODE, 'insuTerm', SRC.PERIOD_LABEL,
+        100, 'UW_MAPPING', 100, 'Y', CURRENT_TIMESTAMP
+    );
+
+-- 확인
+SELECT 'insuTerm MERGE 완료:' AS INFO, COUNT(*) AS CNT 
+FROM LEARNED_PATTERN 
+WHERE FIELD_NAME = 'insuTerm' AND LEARNING_SOURCE = 'UW_MAPPING';
+
+
+-- ========================================
+-- 납입기간(payTerm) 패턴 MERGE
+-- ========================================
+
+MERGE INTO LEARNED_PATTERN LP
+USING (
+    SELECT DISTINCT CODE, PAY_TERM
+    FROM UW_CODE_MAPPING
+    WHERE PAY_TERM IS NOT NULL
+) SRC
+ON (LP.INSU_CD = SRC.CODE AND LP.FIELD_NAME = 'payTerm')
+WHEN MATCHED THEN
+    UPDATE SET 
+        PATTERN_VALUE = SRC.PAY_TERM,
+        CONFIDENCE_SCORE = 100,
+        LEARNING_SOURCE = 'UW_MAPPING',
+        PRIORITY = 100,
+        UPDATED_AT = CURRENT_TIMESTAMP
+WHEN NOT MATCHED THEN
+    INSERT (
+        PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE,
+        CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE, CREATED_AT
+    ) VALUES (
+        learned_pattern_seq.NEXTVAL,
+        SRC.CODE, 'payTerm', SRC.PAY_TERM,
+        100, 'UW_MAPPING', 100, 'Y', CURRENT_TIMESTAMP
+    );
+
+-- 확인
+SELECT 'payTerm MERGE 완료:' AS INFO, COUNT(*) AS CNT 
+FROM LEARNED_PATTERN 
+WHERE FIELD_NAME = 'payTerm' AND LEARNING_SOURCE = 'UW_MAPPING';
+
+
+-- ========================================
+-- 가입나이(ageRange) 패턴 MERGE
+-- ========================================
+
+MERGE INTO LEARNED_PATTERN LP
+USING (
+    SELECT DISTINCT CODE, ENTRY_AGE_M
+    FROM UW_CODE_MAPPING
+    WHERE ENTRY_AGE_M IS NOT NULL
+) SRC
+ON (LP.INSU_CD = SRC.CODE AND LP.FIELD_NAME = 'ageRange')
+WHEN MATCHED THEN
+    UPDATE SET 
+        PATTERN_VALUE = SRC.ENTRY_AGE_M,
+        CONFIDENCE_SCORE = 100,
+        LEARNING_SOURCE = 'UW_MAPPING',
+        PRIORITY = 100,
+        UPDATED_AT = CURRENT_TIMESTAMP
+WHEN NOT MATCHED THEN
+    INSERT (
+        PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE,
+        CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE, CREATED_AT
+    ) VALUES (
+        learned_pattern_seq.NEXTVAL,
+        SRC.CODE, 'ageRange', SRC.ENTRY_AGE_M,
+        100, 'UW_MAPPING', 100, 'Y', CURRENT_TIMESTAMP
+    );
+
+-- 확인
+SELECT 'ageRange MERGE 완료:' AS INFO, COUNT(*) AS CNT 
+FROM LEARNED_PATTERN 
+WHERE FIELD_NAME = 'ageRange' AND LEARNING_SOURCE = 'UW_MAPPING';
+
+
+-- ========================================
+-- 최종 확인
+-- ========================================
+
+COMMIT;
+
+SELECT '=== 이관 완료 ===' AS INFO FROM DUAL;
+
+SELECT 
+    LEARNING_SOURCE,
+    FIELD_NAME,
+    COUNT(*) AS PATTERN_COUNT
+FROM LEARNED_PATTERN
+GROUP BY LEARNING_SOURCE, FIELD_NAME
+ORDER BY LEARNING_SOURCE, FIELD_NAME;
+
+SELECT '=== 상세 데이터 (처음 10건) ===' AS INFO FROM DUAL;
+
+SELECT 
+    INSU_CD,
+    FIELD_NAME,
+    SUBSTR(PATTERN_VALUE, 1, 40) AS PATTERN_VALUE,
+    LEARNING_SOURCE
+FROM LEARNED_PATTERN
+WHERE LEARNING_SOURCE = 'UW_MAPPING'
+  AND ROWNUM <= 10
+ORDER BY INSU_CD, FIELD_NAME;
+
+SELECT '완료!' AS STATUS FROM DUAL;
+
+
+
+
+
+

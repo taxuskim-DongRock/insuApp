@@ -311,3 +311,9 @@ def parse_with_fallback(pdf_path, insu_cd):
 
 
 
+
+
+
+
+
+

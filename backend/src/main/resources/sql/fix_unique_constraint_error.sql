@@ -1,0 +1,233 @@
+-- ========================================
+-- UNIQUE 제약 조건 오류 해결 스크립트
+-- ORA-00001: 무결성 제약 조건(UK_PATTERN) 위배
+-- ========================================
+
+-- 문제: (INSU_CD, FIELD_NAME) 조합이 이미 존재
+-- 해결: MERGE INTO 사용 (UPSERT) 또는 기존 데이터 삭제
+
+-- ========================================
+-- 방법 1: 기존 데이터 삭제 후 재실행 (가장 간단) ⭐⭐⭐⭐⭐
+-- ========================================
+
+-- 1. 기존 UW_MAPPING 데이터 삭제
+DELETE FROM LEARNED_PATTERN WHERE LEARNING_SOURCE = 'UW_MAPPING';
+
+COMMIT;
+
+-- 2. 이관 실행 (수정된 버전)
+
+-- 보험기간(insuTerm) 패턴
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'insuTerm',
+    PERIOD_LABEL,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT DISTINCT CODE, PERIOD_LABEL
+    FROM UW_CODE_MAPPING
+    WHERE PERIOD_LABEL IS NOT NULL
+    ORDER BY CODE, PERIOD_LABEL
+);
+
+-- 확인
+SELECT 'insuTerm 이관:' AS INFO, COUNT(*) AS CNT 
+FROM LEARNED_PATTERN 
+WHERE FIELD_NAME = 'insuTerm';
+
+-- 납입기간(payTerm) 패턴
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'payTerm',
+    PAY_TERM,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT DISTINCT CODE, PAY_TERM
+    FROM UW_CODE_MAPPING
+    WHERE PAY_TERM IS NOT NULL
+    ORDER BY CODE, PAY_TERM
+);
+
+-- 확인
+SELECT 'payTerm 이관:' AS INFO, COUNT(*) AS CNT 
+FROM LEARNED_PATTERN 
+WHERE FIELD_NAME = 'payTerm';
+
+-- 가입나이(ageRange) 패턴
+INSERT INTO LEARNED_PATTERN (
+    PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE, 
+    CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+)
+SELECT 
+    learned_pattern_seq.NEXTVAL,
+    CODE,
+    'ageRange',
+    ENTRY_AGE_M,
+    100,
+    'UW_MAPPING',
+    100,
+    'Y'
+FROM (
+    SELECT DISTINCT CODE, ENTRY_AGE_M
+    FROM UW_CODE_MAPPING
+    WHERE ENTRY_AGE_M IS NOT NULL
+    ORDER BY CODE, ENTRY_AGE_M
+);
+
+-- 확인
+SELECT 'ageRange 이관:' AS INFO, COUNT(*) AS CNT 
+FROM LEARNED_PATTERN 
+WHERE FIELD_NAME = 'ageRange';
+
+COMMIT;
+
+
+-- ========================================
+-- 방법 2: MERGE INTO 사용 (기존 데이터 유지) ⭐⭐⭐⭐
+-- ========================================
+
+/*
+-- 보험기간(insuTerm) MERGE
+MERGE INTO LEARNED_PATTERN LP
+USING (
+    SELECT DISTINCT CODE, PERIOD_LABEL
+    FROM UW_CODE_MAPPING
+    WHERE PERIOD_LABEL IS NOT NULL
+) SRC
+ON (LP.INSU_CD = SRC.CODE AND LP.FIELD_NAME = 'insuTerm')
+WHEN MATCHED THEN
+    UPDATE SET 
+        PATTERN_VALUE = SRC.PERIOD_LABEL,
+        UPDATED_AT = CURRENT_TIMESTAMP
+WHEN NOT MATCHED THEN
+    INSERT (
+        PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE,
+        CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+    ) VALUES (
+        learned_pattern_seq.NEXTVAL,
+        SRC.CODE, 'insuTerm', SRC.PERIOD_LABEL,
+        100, 'UW_MAPPING', 100, 'Y'
+    );
+
+-- 납입기간(payTerm) MERGE
+MERGE INTO LEARNED_PATTERN LP
+USING (
+    SELECT DISTINCT CODE, PAY_TERM
+    FROM UW_CODE_MAPPING
+    WHERE PAY_TERM IS NOT NULL
+) SRC
+ON (LP.INSU_CD = SRC.CODE AND LP.FIELD_NAME = 'payTerm')
+WHEN MATCHED THEN
+    UPDATE SET 
+        PATTERN_VALUE = SRC.PAY_TERM,
+        UPDATED_AT = CURRENT_TIMESTAMP
+WHEN NOT MATCHED THEN
+    INSERT (
+        PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE,
+        CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+    ) VALUES (
+        learned_pattern_seq.NEXTVAL,
+        SRC.CODE, 'payTerm', SRC.PAY_TERM,
+        100, 'UW_MAPPING', 100, 'Y'
+    );
+
+-- 가입나이(ageRange) MERGE
+MERGE INTO LEARNED_PATTERN LP
+USING (
+    SELECT DISTINCT CODE, ENTRY_AGE_M
+    FROM UW_CODE_MAPPING
+    WHERE ENTRY_AGE_M IS NOT NULL
+) SRC
+ON (LP.INSU_CD = SRC.CODE AND LP.FIELD_NAME = 'ageRange')
+WHEN MATCHED THEN
+    UPDATE SET 
+        PATTERN_VALUE = SRC.ENTRY_AGE_M,
+        UPDATED_AT = CURRENT_TIMESTAMP
+WHEN NOT MATCHED THEN
+    INSERT (
+        PATTERN_ID, INSU_CD, FIELD_NAME, PATTERN_VALUE,
+        CONFIDENCE_SCORE, LEARNING_SOURCE, PRIORITY, IS_ACTIVE
+    ) VALUES (
+        learned_pattern_seq.NEXTVAL,
+        SRC.CODE, 'ageRange', SRC.ENTRY_AGE_M,
+        100, 'UW_MAPPING', 100, 'Y'
+    );
+
+COMMIT;
+*/
+
+
+-- ========================================
+-- 진단 쿼리: 중복 원인 파악
+-- ========================================
+
+SELECT '=== 중복 데이터 확인 ===' AS INFO FROM DUAL;
+
+-- 1. LEARNED_PATTERN 현재 상태
+SELECT 
+    INSU_CD,
+    FIELD_NAME,
+    COUNT(*) AS CNT
+FROM LEARNED_PATTERN
+GROUP BY INSU_CD, FIELD_NAME
+HAVING COUNT(*) > 1
+ORDER BY CNT DESC;
+
+-- 2. UW_CODE_MAPPING 중복 확인
+SELECT 
+    CODE,
+    PERIOD_LABEL,
+    COUNT(*) AS CNT
+FROM UW_CODE_MAPPING
+WHERE PERIOD_LABEL IS NOT NULL
+GROUP BY CODE, PERIOD_LABEL
+HAVING COUNT(*) > 1;
+
+-- 3. LEARNED_PATTERN 전체 데이터
+SELECT 
+    INSU_CD,
+    FIELD_NAME,
+    PATTERN_VALUE,
+    LEARNING_SOURCE,
+    CREATED_AT
+FROM LEARNED_PATTERN
+ORDER BY INSU_CD, FIELD_NAME, CREATED_AT DESC;
+
+
+-- ========================================
+-- 최종 확인 쿼리
+-- ========================================
+
+SELECT '=== 최종 결과 ===' AS INFO FROM DUAL;
+
+SELECT 
+    LEARNING_SOURCE,
+    FIELD_NAME,
+    COUNT(*) AS PATTERN_COUNT
+FROM LEARNED_PATTERN
+GROUP BY LEARNING_SOURCE, FIELD_NAME
+ORDER BY LEARNING_SOURCE, FIELD_NAME;
+
+SELECT '이관 완료!' AS STATUS FROM DUAL;
+
+
+
+
+
+

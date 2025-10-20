@@ -412,3 +412,9 @@ cat C:\insu_app\parse_results\final_statistics.csv
 
 
 
+
+
+
+
+
+

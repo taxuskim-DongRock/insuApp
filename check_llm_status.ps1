@@ -280,3 +280,9 @@ Write-Host "     '쿼럼 달성 (2/3 합의)' 메시지 확인" -ForegroundColor
 Write-Host ""
 
 
+
+
+
+
+
+

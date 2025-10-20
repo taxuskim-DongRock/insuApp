@@ -60,3 +60,9 @@ if __name__ == '__main__':
     analyze_pdf(sys.argv[1])
 
 
+
+
+
+
+
+
