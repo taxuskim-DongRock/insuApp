@@ -30,3 +30,9 @@ public class ValidationResult {
     private String insuCd;                    // 보험코드
 }
 
+
+
+
+
+
+

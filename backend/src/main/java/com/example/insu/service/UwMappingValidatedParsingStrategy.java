@@ -2,6 +2,8 @@ package com.example.insu.service;
 
 import com.example.insu.dto.UwCodeMappingData;
 import com.example.insu.dto.ValidationResult;
+import com.example.insu.dto.LearnedPattern;
+import com.example.insu.mapper.LearnedPatternMapper;
 import com.example.insu.util.PdfParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,12 @@ public class UwMappingValidatedParsingStrategy implements ParsingStrategy {
     @Autowired
     private OllamaService ollamaService;
     
+    @Autowired
+    private LearnedPatternMapper learnedPatternMapper;
+    
+    @Autowired(required = false)
+    private LearnedPatternScoringService patternScoringService;
+    
     @Override
     public Map<String, String> parse(File pdfFile, String insuCd) {
         try {
@@ -35,7 +43,15 @@ public class UwMappingValidatedParsingStrategy implements ParsingStrategy {
             
             log.debug("LLM 파싱 결과: {}", llmResult);
             
-            // 2. UW_CODE_MAPPING 검증
+            // 2. 학습된 패턴 적용
+            llmResult = applyLearnedPatterns(insuCd, llmResult);
+            log.info("학습된 패턴 적용 후: {}", llmResult);
+            
+            // 3. 가입나이 패턴 보완 정책 적용
+            llmResult = applyAgePatternCorrection(insuCd, llmResult);
+            log.info("가입나이 패턴 보완 후: {}", llmResult);
+            
+            // 3. UW_CODE_MAPPING 검증
             ValidationResult validation = uwMappingValidationService.validateWithUwMapping(insuCd, llmResult);
             
             if ("VALID".equals(validation.getStatus()) && validation.getConfidence() >= 80) {
@@ -88,6 +104,203 @@ public class UwMappingValidatedParsingStrategy implements ParsingStrategy {
         } catch (Exception e) {
             log.error("프롬프트 생성 오류: {}", e.getMessage(), e);
             return "";
+        }
+    }
+    
+    /**
+     * 학습된 패턴 적용
+     */
+    private Map<String, String> applyLearnedPatterns(String insuCd, Map<String, String> llmResult) {
+        try {
+            log.info("학습된 패턴 조회 시작: {}", insuCd);
+            
+            // 해당 상품코드의 모든 학습된 패턴 조회
+            List<LearnedPattern> patterns = learnedPatternMapper.selectAllByInsuCd(insuCd);
+            
+            if (patterns.isEmpty()) {
+                log.info("학습된 패턴 없음: {}", insuCd);
+                return llmResult;
+            }
+            
+            log.info("학습된 패턴 {} 개 발견: {}", patterns.size(), insuCd);
+            
+            // 각 패턴의 상세 정보 로그
+            for (LearnedPattern pattern : patterns) {
+                log.info("패턴 상세: {} {} = {} (신뢰도: {}%, 우선순위: {})", 
+                        insuCd, pattern.getFieldName(), pattern.getPatternValue(), 
+                        pattern.getConfidenceScore(), pattern.getPriority());
+            }
+            
+            // 패턴을 우선순위별로 정렬 (높은 우선순위부터)
+            patterns.sort((p1, p2) -> Integer.compare(p2.getPriority(), p1.getPriority()));
+            
+            // 각 필드에 대해 학습된 패턴 적용
+            Map<String, String> result = new LinkedHashMap<>(llmResult);
+            boolean patternApplied = false;
+            
+            for (LearnedPattern pattern : patterns) {
+                String fieldName = pattern.getFieldName();
+                String patternValue = pattern.getPatternValue();
+                int confidence = pattern.getConfidenceScore();
+                int priority = pattern.getPriority();
+                
+                // 품질 스코어링 적용
+                int qualityScore = confidence; // 기본값
+                if (patternScoringService != null) {
+                    qualityScore = patternScoringService.calculatePatternScore(pattern);
+                    log.debug("패턴 품질 점수: {} {} = {} 점 (등급: {})", 
+                             insuCd, fieldName, qualityScore, 
+                             patternScoringService.getQualityGrade(qualityScore));
+                }
+                
+                // 품질 점수 60 이상만 적용 (기존: 신뢰도 70, 우선순위 50)
+                boolean isApplicable = patternScoringService != null ? 
+                                      patternScoringService.isApplicable(pattern) :
+                                      (confidence >= 70 && priority >= 50);
+                
+                if (isApplicable) {
+                    String currentValue = result.get(fieldName);
+                    
+                    // 현재 값이 기본값이거나 복잡한 파싱 결과인 경우 패턴 적용
+                    if (currentValue == null || currentValue.trim().isEmpty() || 
+                        currentValue.equals("—") || 
+                        currentValue.contains("종신:") || 
+                        currentValue.length() > 100) { // 복잡한 파싱 결과도 덮어쓰기
+                        
+                        result.put(fieldName, patternValue);
+                        patternApplied = true;
+                        
+                        log.info("✅ 학습된 패턴 적용: {} {} = {} (품질점수: {}, 신뢰도: {}%, 우선순위: {})", 
+                                insuCd, fieldName, patternValue, qualityScore, confidence, priority);
+                    } else {
+                        log.debug("패턴 적용 스킵: {} {} 현재값='{}' (품질점수: {})", 
+                                insuCd, fieldName, currentValue, qualityScore);
+                    }
+                } else {
+                    log.warn("❌ 패턴 품질 부족으로 적용 불가: {} {} (품질점수: {})", 
+                            insuCd, fieldName, qualityScore);
+                }
+            }
+            
+            if (patternApplied) {
+                result.put("validationSource", "LEARNED_PATTERN");
+                log.info("학습된 패턴 적용 완료: {}", insuCd);
+            } else {
+                log.info("적용 가능한 학습된 패턴 없음: {}", insuCd);
+            }
+            
+            return result;
+            
+        } catch (Exception e) {
+            log.error("학습된 패턴 적용 중 오류: {} - {}", insuCd, e.getMessage(), e);
+            return llmResult; // 오류 시 원본 반환
+        }
+    }
+    
+    /**
+     * 가입나이 패턴 보완 정책 적용
+     * 같은 코드 내의 다른 납입기간/보험기간의 정상적인 가입나이 패턴을 참조
+     */
+    private Map<String, String> applyAgePatternCorrection(String insuCd, Map<String, String> llmResult) {
+        try {
+            String currentAgeRange = llmResult.get("ageRange");
+            
+            // 가입나이가 정상적인 패턴인지 확인
+            if (isNormalAgePattern(currentAgeRange)) {
+                log.debug("가입나이가 정상 패턴이므로 보완 불필요: {} = {}", insuCd, currentAgeRange);
+                return llmResult;
+            }
+            
+            log.info("가입나이 패턴 보완 필요: {} = {}", insuCd, currentAgeRange);
+            
+            // 같은 코드의 UW_CODE_MAPPING 데이터에서 정상적인 가입나이 패턴 찾기
+            String correctedAgeRange = findNormalAgePatternFromUwMapping(insuCd);
+            
+            if (correctedAgeRange != null && !correctedAgeRange.equals(currentAgeRange)) {
+                llmResult.put("ageRange", correctedAgeRange);
+                llmResult.put("validationSource", "AGE_PATTERN_CORRECTION");
+                log.info("가입나이 패턴 보완 적용: {} {} -> {}", insuCd, currentAgeRange, correctedAgeRange);
+            } else {
+                log.info("적용 가능한 정상 가입나이 패턴 없음: {}", insuCd);
+            }
+            
+            return llmResult;
+            
+        } catch (Exception e) {
+            log.error("가입나이 패턴 보완 중 오류: {} - {}", insuCd, e.getMessage(), e);
+            return llmResult; // 오류 시 원본 반환
+        }
+    }
+    
+    /**
+     * 정상적인 가입나이 패턴인지 확인
+     * 예: "남: 30 ~ 70, 여: 30 ~ 70"
+     */
+    private boolean isNormalAgePattern(String ageRange) {
+        if (ageRange == null || ageRange.trim().isEmpty() || ageRange.equals("—")) {
+            return false;
+        }
+        
+        // 정상 패턴: "남: XX ~ XX, 여: XX ~ XX" 형태
+        String normalPattern = "남:\\s*\\d+\\s*~\\s*\\d+\\s*,\\s*여:\\s*\\d+\\s*~\\s*\\d+";
+        
+        // 복잡한 패턴이거나 길이가 100자 이상이면 비정상으로 간주
+        if (ageRange.length() > 100 || ageRange.contains("종신:")) {
+            return false;
+        }
+        
+        return ageRange.matches(normalPattern);
+    }
+    
+    /**
+     * UW_CODE_MAPPING에서 같은 코드의 정상적인 가입나이 패턴 찾기
+     */
+    private String findNormalAgePatternFromUwMapping(String insuCd) {
+        try {
+            List<UwCodeMappingData> mappingData = uwMappingValidationService.getValidationDataByCode(insuCd);
+            
+            if (mappingData == null || mappingData.isEmpty()) {
+                log.warn("UW_CODE_MAPPING 데이터 없음: {}", insuCd);
+                return null;
+            }
+            
+            // 가장 많이 나타나는 가입나이 패턴 찾기
+            Map<String, Integer> patternCount = new HashMap<>();
+            
+            for (UwCodeMappingData data : mappingData) {
+                String maleAge = data.getEntryAgeM();
+                String femaleAge = data.getEntryAgeF();
+                
+                if (maleAge != null && femaleAge != null && 
+                    !maleAge.trim().isEmpty() && !femaleAge.trim().isEmpty()) {
+                    
+                    // 정규화된 패턴 생성
+                    String normalizedPattern = String.format("남: %s, 여: %s", 
+                        maleAge.trim(), femaleAge.trim());
+                    
+                    patternCount.merge(normalizedPattern, 1, Integer::sum);
+                }
+            }
+            
+            if (patternCount.isEmpty()) {
+                log.warn("정상적인 가입나이 패턴 없음: {}", insuCd);
+                return null;
+            }
+            
+            // 가장 많이 나타나는 패턴 선택
+            String mostCommonPattern = patternCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(null);
+            
+            log.info("가장 일반적인 가입나이 패턴: {} = {} (빈도: {})", 
+                    insuCd, mostCommonPattern, patternCount.get(mostCommonPattern));
+            
+            return mostCommonPattern;
+            
+        } catch (Exception e) {
+            log.error("UW_CODE_MAPPING에서 가입나이 패턴 찾기 실패: {} - {}", insuCd, e.getMessage(), e);
+            return null;
         }
     }
     
@@ -211,7 +424,7 @@ public class UwMappingValidatedParsingStrategy implements ParsingStrategy {
     
     @Override
     public int getPriority() {
-        return 2; // 두 번째 우선순위 (Python OCR 다음)
+        return 1; // 최고 우선순위 (학습된 패턴 적용을 위해)
     }
     
     @Override

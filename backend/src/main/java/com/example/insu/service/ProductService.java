@@ -2,6 +2,7 @@ package com.example.insu.service;
 
 import com.example.insu.dto.*;
 import com.example.insu.mapper.InsuMapper;
+import com.example.insu.mapper.LearnedPatternMapper;
 import com.example.insu.mapper.PremRateRow;
 import com.example.insu.util.PdfParser;
 import com.example.insu.util.PdfParser.Sections;
@@ -16,6 +17,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.nio.file.Paths;
 import com.example.insu.util.LayoutStripper;
@@ -27,6 +31,7 @@ import com.example.insu.util.LimitTableExtractor;
 public class ProductService {
 
   private final InsuMapper insuMapper;
+  private final LearnedPatternMapper learnedPatternMapper;
   private final PythonPdfService pythonPdfService;
   private final ImprovedHybridParsingService hybridParsingService; // Phase 1 개선: Caffeine Cache 적용
   private final UwMappingHybridParsingService uwMappingHybridParsingService; // UW_CODE_MAPPING 기반 검증
@@ -34,6 +39,9 @@ public class ProductService {
 
   @Value("${insu.pdf-dir}")
   private String pdfDir;
+  
+  // 학습된 패턴 캐시 (메모리 캐시)
+  private final Map<String, String> learnedPatternCache = new ConcurrentHashMap<>();
 
   /** PDF 디렉토리 경로 반환 (다른 서비스에서 사용) */
   public String getPdfDir() {
@@ -85,7 +93,7 @@ public class ProductService {
       Map<String,String> t = parseTermsWithPython(pdf, insuCd);
 
       // 보험기간과 납입기간의 모든 조합 생성
-      List<PolicyTerms> termsList = generateTermCombinations(t);
+      List<PolicyTerms> termsList = generateTermCombinations(t, insuCd);
 
       return ProductInfoResponse.builder()
           .insuCd(insuCd).name(name).type(guessTypeByCode(insuCd))
@@ -1467,7 +1475,7 @@ public class ProductService {
   }
 
   /** 보험기간과 납입기간의 모든 조합을 생성하는 메서드 */
-  private List<PolicyTerms> generateTermCombinations(Map<String, String> termsMap) {
+  private List<PolicyTerms> generateTermCombinations(Map<String, String> termsMap, String insuCd) {
     List<PolicyTerms> combinations = new ArrayList<>();
     
     String insuTermStr = termsMap.get("insuTerm");
@@ -1494,7 +1502,7 @@ public class ProductService {
     for (String insuTerm : insuTerms) {
       for (String payTerm : payTerms) {
         // 각 납입기간에 맞는 나이 범위 추출
-        String specificAgeRange = extractAgeRangeForPayTerm(ageRange, payTerm.trim());
+        String specificAgeRange = extractAgeRangeForPayTerm(ageRange, payTerm.trim(), insuCd);
         
         PolicyTerms combination = PolicyTerms.builder()
             .insuTerm(insuTerm.trim())
@@ -1601,9 +1609,12 @@ public class ProductService {
       int targetAge = age != null ? age : 15;
       BigDecimal amount = baseAmount != null ? baseAmount : BigDecimal.valueOf(100);
       
-      // 보험기간과 납입기간을 숫자로 변환
-      Integer insuTermNum = parseTermToNumber(insuTermStr);
+      // 보험기간과 납입기간을 숫자로 변환 (세만기인 경우 가입자 나이 고려)
+      Integer insuTermNum = parseTermToNumberWithAge(insuTermStr, targetAge);
       Integer payTermNum = parseTermToNumber(payTermStr);
+      
+      log.info("보험료 계산 파라미터: 상품코드={}, 나이={}, 보험기간원본='{}', 보험기간계산={}, 납입기간원본='{}', 납입기간계산={}", 
+               insuCd, targetAge, insuTermStr, insuTermNum, payTermStr, payTermNum);
       
       if (insuTermNum == null) {
         errors.add("보험기간을 숫자로 변환할 수 없습니다: " + insuTermStr);
@@ -1618,12 +1629,34 @@ public class ProductService {
       }
       
       // 보험료 데이터 조회
+      log.info("보험료 데이터 조회 시작: SELECT * FROM RVT_PREM_RATE WHERE ISRC_TBL_INSU_CD='{}' AND ISRC_TBL_PIBO_AGE_NB3={} AND ISRC_TBL_INSU_YYCT_NB3={} AND ISRC_TBL_NABI_MMCT_NB3={}", 
+               insuCd, targetAge, insuTermNum, payTermNum);
       PremRateRow premRate = insuMapper.selectPremRate(insuCd, targetAge, insuTermNum, payTermNum);
       
       if (premRate == null) {
+        log.warn("보험료 데이터 조회 실패: 상품코드={}, 나이={}, 보험기간={}, 납입기간={}", 
+                 insuCd, targetAge, insuTermNum, payTermNum);
+        
+        // 디버깅을 위해 해당 상품코드의 모든 데이터 확인
+        log.info("디버깅: 상품코드 {}의 모든 데이터 조회 시작", insuCd);
+        List<PremRateRow> allData = insuMapper.selectAllPremRatesByInsuCd(insuCd);
+        if (allData != null && !allData.isEmpty()) {
+          log.info("상품코드 {}의 전체 데이터 ({}건):", insuCd, allData.size());
+          for (PremRateRow row : allData) {
+            log.info("  나이={}, 보험기간={}, 납입기간={}, 남성요율={}, 여성요율={}", 
+                     row.getPiboAge(), row.getInsuTerm(), row.getPayTerm(), 
+                     row.getManRate(), row.getFmlRate());
+          }
+        } else {
+          log.warn("상품코드 {}의 데이터가 전혀 없습니다", insuCd);
+        }
+        
         errors.add(String.format("%s세, 보험기간 %d, 납입기간 %d 최소 or 최대 데이터 없음", targetAge, insuTermNum, payTermNum));
         result.put("errors", errors);
         return result;
+      } else {
+        log.info("보험료 데이터 조회 성공: 기준금액={}, 남성요율={}, 여성요율={}", 
+                 premRate.getStndAmt(), premRate.getManRate(), premRate.getFmlRate());
       }
       
       // 보험료 계산: (기준금액 * 요율 / 기준구성금액) * 10000
@@ -1665,7 +1698,7 @@ public class ProductService {
   }
 
   /** 특정 납입기간에 맞는 나이 범위를 추출하는 메서드 (개선된 버전) */
-  private String extractAgeRangeForPayTerm(String fullAgeRange, String payTerm) {
+  private String extractAgeRangeForPayTerm(String fullAgeRange, String payTerm, String insuCd) {
     if (fullAgeRange == null || fullAgeRange.trim().isEmpty()) {
       return "—";
     }
@@ -1679,13 +1712,32 @@ public class ProductService {
     String normalizedPayTerm = normalizePayTerm(payTerm);
     String trimmedAgeRange = fullAgeRange.trim();
     
-    log.debug("가입나이 추출: 정규화된 납입기간='{}', 원본 납입기간='{}'", normalizedPayTerm, payTerm);
+    log.debug("가입나이 추출: 정규화된 납입기간='{}', 원본 납입기간='{}', 전체 가입나이='{}'", normalizedPayTerm, payTerm, fullAgeRange);
     
     // 특별한 경우들 처리
     if ("전기납".equals(normalizedPayTerm)) {
       // 전기납인 경우 특별 처리
       if (trimmedAgeRange.contains("전기납")) {
         return extractAgeRangeForSpecialTerm(trimmedAgeRange, "전기납");
+      }
+    }
+    
+    // 복잡한 가입나이 패턴에 대한 보완 처리 (모든 납입기간 적용)
+    if (isComplexAgeRange(trimmedAgeRange)) {
+      // 특정 납입기간에 대한 패턴 보완 시도
+      if (trimmedAgeRange.contains(normalizedPayTerm)) {
+        String correctedAgeRange = extractAgeRangeForSpecialTerm(trimmedAgeRange, normalizedPayTerm);
+        if (correctedAgeRange != null && !correctedAgeRange.equals(trimmedAgeRange)) {
+          log.info("{} 가입나이 패턴 보완 적용: {} -> {}", normalizedPayTerm, trimmedAgeRange, correctedAgeRange);
+          return correctedAgeRange;
+        }
+      }
+      
+      // 복잡한 패턴을 정상 패턴으로 보완
+      String normalPattern = extractNormalAgePatternFromSameProduct(trimmedAgeRange, insuCd);
+      if (normalPattern != null) {
+        log.info("{} 복잡 패턴을 정상 패턴으로 보완: {} -> {}", normalizedPayTerm, trimmedAgeRange, normalPattern);
+        return normalPattern;
       }
     }
     
@@ -1827,6 +1879,104 @@ public class ProductService {
     
     return result;
   }
+  
+  /** 복잡한 가입나이 패턴인지 확인 */
+  private boolean isComplexAgeRange(String ageRange) {
+    if (ageRange == null || ageRange.trim().isEmpty() || ageRange.equals("—")) {
+      return false;
+    }
+    
+    // 복잡한 패턴 판별 기준
+    boolean isLong = ageRange.length() > 100; // 길이가 100자 이상
+    boolean hasMultipleTerms = ageRange.contains(",") && ageRange.contains("("); // 여러 납입기간 포함
+    boolean hasComplexStructure = ageRange.contains("종신:") || ageRange.contains("세만기:"); // 복잡한 구조
+    
+    return isLong || hasMultipleTerms || hasComplexStructure;
+  }
+  
+  /** 같은 상품의 다른 납입기간에서 정상적인 가입나이 패턴 추출 */
+  private String extractNormalAgePatternFromSameProduct(String complexAgeRange, String insuCd) {
+    try {
+      // 1단계: 학습된 패턴 확인
+      String learnedPattern = checkLearnedPattern(insuCd);
+      if (learnedPattern != null) {
+        log.info("학습된 패턴 적용: {} = {}", insuCd, learnedPattern);
+        return learnedPattern;
+      }
+      
+      // 2단계: 복잡한 가입나이 문자열에서 정상적인 패턴 찾기
+      // 예: "종신: 10년납(남:30세 ~ 70세, 여:30세 ~ 70세), 20년납(남:30세 ~ 70세, 여:30세 ~ 70세), 5년납(남:30세 ~ 70세, 여:30세 ~ 70세), 일시납(남:30세 ~ 70세, 여:30세 ~ 70세)"
+      
+      // 정상적인 패턴: "남:XX ~ XX, 여:XX ~ XX" 형태
+      String normalPattern = "남:\\s*\\d+\\s*~\\s*\\d+\\s*,\\s*여:\\s*\\d+\\s*~\\s*\\d+";
+      java.util.regex.Pattern regex = java.util.regex.Pattern.compile(normalPattern);
+      java.util.regex.Matcher matcher = regex.matcher(complexAgeRange);
+      
+      if (matcher.find()) {
+        String matchedPattern = matcher.group();
+        log.debug("복잡한 가입나이에서 정상 패턴 발견: {}", matchedPattern);
+        return matchedPattern;
+      }
+      
+      // 다른 방법: 숫자 패턴으로 찾기
+      String numberPattern = "\\(남:\\s*\\d+\\s*~\\s*\\d+\\s*,\\s*여:\\s*\\d+\\s*~\\s*\\d+\\)";
+      java.util.regex.Pattern numberRegex = java.util.regex.Pattern.compile(numberPattern);
+      java.util.regex.Matcher numberMatcher = numberRegex.matcher(complexAgeRange);
+      
+      if (numberMatcher.find()) {
+        String matchedContent = numberMatcher.group();
+        // 괄호 제거하고 정규화
+        String normalizedPattern = matchedContent.substring(1, matchedContent.length() - 1);
+        log.debug("숫자 패턴으로 정상 가입나이 추출: {}", normalizedPattern);
+        return normalizedPattern;
+      }
+      
+    } catch (Exception e) {
+      log.debug("정상 가입나이 패턴 추출 실패: {}", e.getMessage());
+    }
+    
+    return null;
+  }
+  
+  /** 학습된 패턴 확인 (캐싱 적용) */
+  private String checkLearnedPattern(String insuCd) {
+    try {
+      if (insuCd == null) {
+        return null;
+      }
+      
+      // 캐시에서 먼저 확인
+      String cacheKey = insuCd + "_ageRange";
+      String cachedPattern = learnedPatternCache.get(cacheKey);
+      if (cachedPattern != null) {
+        log.debug("캐시에서 학습된 패턴 발견: {} = {}", insuCd, cachedPattern);
+        return cachedPattern;
+      }
+      
+      // 데이터베이스에서 조회
+      List<LearnedPattern> patterns = learnedPatternMapper.selectAllByInsuCd(insuCd);
+      for (LearnedPattern pattern : patterns) {
+        if ("ageRange".equals(pattern.getFieldName()) && 
+            pattern.getConfidenceScore() >= 70 && 
+            pattern.getPriority() >= 50) {
+          log.info("학습된 가입나이 패턴 발견: {} = {} (신뢰도: {}%, 우선순위: {})", 
+                  insuCd, pattern.getPatternValue(), pattern.getConfidenceScore(), pattern.getPriority());
+          
+          // 캐시에 저장
+          learnedPatternCache.put(cacheKey, pattern.getPatternValue());
+          return pattern.getPatternValue();
+        }
+      }
+      
+      // 패턴이 없으면 캐시에 빈 값 저장 (재조회 방지)
+      learnedPatternCache.put(cacheKey, "");
+      
+    } catch (Exception e) {
+      log.debug("학습된 패턴 확인 실패: {}", e.getMessage());
+    }
+    return null;
+  }
+  
 
   /** 특약 코드인지 판별하는 헬퍼 메서드 (현재 사용되지 않음) */
   @SuppressWarnings("unused")
@@ -1920,6 +2070,11 @@ public class ProductService {
       return 100;
     }
     
+    // "일시납" -> 1 (일시납입)
+    if (trimmed.contains("일시납")) {
+      return 1;
+    }
+    
     // "전기납" -> 1 (전기납입)
     if (trimmed.contains("전기납")) {
       return 1;
@@ -1944,6 +2099,73 @@ public class ProductService {
     
     // 변환 실패 시 경고 로그
     log.warn("납입기간을 숫자로 변환할 수 없습니다: 원본='{}', 정규화='{}'", termStr, trimmed);
+    return null;
+  }
+  
+  /**
+   * 보험기간을 숫자로 변환 (세만기인 경우 가입자 나이 고려)
+   * 세만기 패턴: 70세만기, 75세만기, 80세만기, 85세만기, 90세만기, 95세만기, 100세만기 등
+   */
+  private Integer parseTermToNumberWithAge(String termStr, int age) {
+    if (termStr == null || termStr.equals("—")) {
+      return null;
+    }
+    
+    String trimmed = termStr.trim();
+    log.debug("보험기간 숫자 변환 (나이 고려): 원본='{}', 가입자나이={}", termStr, age);
+    
+    // "종신" -> 999 (종신보험)
+    if (trimmed.contains("종신")) {
+      return 999;
+    }
+    
+    // 세만기 패턴 매칭: 숫자 + "세만기"
+    // 예: "70세만기", "75세만기", "80세만기", "85세만기", "90세만기", "95세만기", "100세만기"
+    Pattern maturityPattern = Pattern.compile("(\\d{2,3})세만기");
+    Matcher maturityMatcher = maturityPattern.matcher(trimmed);
+    
+    if (maturityMatcher.find()) {
+      int maturityAge = Integer.parseInt(maturityMatcher.group(1));
+      log.info("세만기 패턴 매칭 성공: 원본='{}', 추출된 만기나이={}, 가입자나이={}", 
+               trimmed, maturityAge, age);
+      
+      // 만기나이가 30을 초과하는 경우에만 세만기 계산 적용
+      if (maturityAge > 30) {
+        int insuranceTerm = maturityAge - age;
+        log.info("세만기 보험기간 계산 완료: {}세만기, {}세 가입 → {} - {} = {}년", 
+                 maturityAge, age, maturityAge, age, insuranceTerm);
+        
+        // 음수 보험기간 방지
+        if (insuranceTerm <= 0) {
+          log.warn("계산된 보험기간이 0 이하입니다: 만기나이={}, 가입자나이={}, 보험기간={}", 
+                   maturityAge, age, insuranceTerm);
+          return null;
+        }
+        
+        log.info("세만기 보험기간 반환: {}년", insuranceTerm);
+        return insuranceTerm;
+      } else {
+        log.info("만기나이가 30 이하이므로 세만기 계산 미적용: {}세만기 → {}년 반환", maturityAge, maturityAge);
+        return maturityAge; // 30 이하는 그대로 반환
+      }
+    } else {
+      log.info("세만기 패턴 매칭 실패: '{}'", trimmed);
+    }
+    
+    // 일반 년만기 처리 (예: "10년만기" -> 10)
+    String numberStr = trimmed.replaceAll("[^0-9]", "");
+    if (!numberStr.isEmpty()) {
+      try {
+        int result = Integer.parseInt(numberStr);
+        log.debug("보험기간 숫자 변환 성공: '{}' -> {}", trimmed, result);
+        return result;
+      } catch (NumberFormatException e) {
+        log.debug("숫자 변환 실패: {}", trimmed);
+      }
+    }
+    
+    // 변환 실패 시 경고 로그
+    log.warn("보험기간을 숫자로 변환할 수 없습니다: 원본='{}', 가입자나이={}", termStr, age);
     return null;
   }
 }

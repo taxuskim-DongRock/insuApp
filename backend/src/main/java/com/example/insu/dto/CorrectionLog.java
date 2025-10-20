@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- * Phase 3: 사용자 수정 로그 DTO
+ * Phase 3: 사용자 수정 로그 DTO (DB 연동 버전)
  */
 @Data
 @Builder
@@ -17,74 +17,60 @@ import java.util.Map;
 @AllArgsConstructor
 public class CorrectionLog {
     
-    /**
-     * 로그 ID
-     */
+    // 기본 정보
     private Long id;
-    
-    /**
-     * 보험코드
-     */
     private String insuCd;
+    private String srcFile;
+    private String productName;
     
-    /**
-     * 원본 파싱 결과
-     */
+    // 원본 파싱 결과 (개별 필드)
+    private String originalInsuTerm;
+    private String originalPayTerm;
+    private String originalAgeRange;
+    private String originalRenew;
+    private String originalSpecialNotes;
+    private String originalValidationSource;
+    
+    // 사용자 수정 결과 (개별 필드)
+    private String correctedInsuTerm;
+    private String correctedPayTerm;
+    private String correctedAgeRange;
+    private String correctedRenew;
+    private String correctedSpecialNotes;
+    
+    // 수정 메타데이터
+    private String pdfText;
+    private Integer correctedFieldCount;
+    private String correctionReason;
+    private String userId;
+    private LocalDateTime timestamp;
+    
+    // 학습 상태
+    private Character isLearned;
+    private LocalDateTime learnedAt;
+    private Long learningPatternId;
+    
+    // 검증 정보
+    private Integer validationScore;
+    private Character isVerified;
+    private String verifiedBy;
+    private LocalDateTime verifiedAt;
+    
+    // 하위 호환성을 위한 Map 변환 (기존 코드 호환)
     private Map<String, String> originalResult;
-    
-    /**
-     * 사용자 수정 결과
-     */
     private Map<String, String> correctedResult;
     
     /**
-     * PDF 텍스트 (학습용)
+     * 수정 이유 (기존 필드명 호환)
      */
-    private String pdfText;
-    
-    /**
-     * 수정 시간
-     */
-    private LocalDateTime timestamp;
-    
-    /**
-     * 수정 이유 (옵션)
-     */
-    private String reason;
-    
-    /**
-     * 사용자 ID (옵션)
-     */
-    private String userId;
-    
-    /**
-     * 수정된 필드 개수
-     */
-    public int getCorrectedFieldCount() {
-        int count = 0;
-        for (String key : originalResult.keySet()) {
-            String original = originalResult.get(key);
-            String corrected = correctedResult.get(key);
-            if (original != null && corrected != null && !original.equals(corrected)) {
-                count++;
-            }
-        }
-        return count;
+    public String getReason() {
+        return correctionReason;
     }
     
-    /**
-     * 주요 수정 필드 반환
-     */
-    public String getPrimaryCorrectedField() {
-        for (String key : originalResult.keySet()) {
-            String original = originalResult.get(key);
-            String corrected = correctedResult.get(key);
-            if (original != null && corrected != null && !original.equals(corrected)) {
-                return key;
-            }
-        }
-        return null;
+    public void setReason(String reason) {
+        this.correctionReason = reason;
     }
 }
+
 
 

@@ -42,4 +42,7 @@ public interface InsuMapper {
                                              @Param("age") int age,
                                              @Param("insuTerm") int insuTerm,
                                              @Param("payTerm") int payTerm);
+  
+  // 디버깅용: 특정 상품코드의 모든 데이터 조회
+  java.util.List<PremRateRow> selectAllPremRatesByInsuCd(@Param("insuCd") String insuCd);
 }

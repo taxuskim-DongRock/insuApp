@@ -1,16 +1,24 @@
 package com.example.insu.service;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
+import com.example.insu.service.UwCodeMappingFewShotService.UwCodeMappingRow;
 
 /**
  * Phase 2: Few-Shot Learning 예시 관리
+ * - 기존 하드코딩 예시 + CSV 기반 Few-Shot 통합
  */
+@Slf4j
 @Component
 public class FewShotExamples {
     
     private final List<String> examples = new ArrayList<>();
+    
+    @Autowired(required = false)
+    private UwCodeMappingFewShotService uwCodeMappingFewShotService;
     
     public FewShotExamples() {
         initializeExamples();
@@ -109,7 +117,7 @@ public class FewShotExamples {
     }
     
     /**
-     * Few-Shot 프롬프트 생성
+     * Few-Shot 프롬프트 생성 (CSV 기반 Few-Shot 통합)
      */
     public String buildFewShotPrompt(String pdfText, String insuCd, String productName) {
         StringBuilder prompt = new StringBuilder();
@@ -117,19 +125,113 @@ public class FewShotExamples {
         prompt.append("당신은 보험 문서 파싱 전문가입니다.\n");
         prompt.append("다음 예시들을 참고하여 정확히 추출하세요.\n\n");
         
-        // 모든 예시 추가
+        // 1. CSV 기반 Few-Shot 예시 추가 (우선순위 높음)
+        if (uwCodeMappingFewShotService != null) {
+            List<UwCodeMappingRow> csvExamples = getCsvFewShotExamples(insuCd);
+            
+            if (!csvExamples.isEmpty()) {
+                prompt.append("=== 검증된 CSV Few-Shot 예시 (최우선) ===\n\n");
+                
+                for (int i = 0; i < Math.min(3, csvExamples.size()); i++) {
+                    UwCodeMappingRow row = csvExamples.get(i);
+                    prompt.append(buildCsvExample(row, i + 1)).append("\n\n");
+                }
+                
+                log.debug("CSV Few-Shot 예시 {} 개 추가됨 (상품코드: {})", csvExamples.size(), insuCd);
+            }
+        }
+        
+        // 2. 기존 하드코딩 예시 추가 (보조)
+        prompt.append("=== 추가 참고 예시 ===\n\n");
         for (String example : examples) {
             prompt.append(example).append("\n\n");
         }
         
-        prompt.append("[이제 다음 상품을 파싱하세요]\n");
+        // 3. 실제 파싱 대상
+        prompt.append("=== 이제 다음 상품을 파싱하세요 ===\n");
         prompt.append("입력:\n");
         prompt.append("상품코드: ").append(insuCd).append("\n");
         prompt.append("상품명: ").append(productName != null ? productName : "미확인").append("\n");
         prompt.append("사업방법 내용:\n").append(pdfText).append("\n\n");
-        prompt.append("출력 (JSON 형식):\n");
+        prompt.append("출력 (JSON 형식으로만 응답, 설명 없이):\n");
         
         return prompt.toString();
+    }
+    
+    /**
+     * CSV Few-Shot 예시 조회 (우선순위 로직)
+     */
+    private List<UwCodeMappingRow> getCsvFewShotExamples(String insuCd) {
+        List<UwCodeMappingRow> examples = new ArrayList<>();
+        
+        try {
+            // 1순위: 동일 상품코드의 예시
+            List<UwCodeMappingRow> sameProduct = uwCodeMappingFewShotService.getFewShotExamples(insuCd);
+            if (!sameProduct.isEmpty()) {
+                examples.addAll(sameProduct.subList(0, Math.min(2, sameProduct.size())));
+                log.info("동일 상품코드 CSV Few-Shot {} 개 발견: {}", examples.size(), insuCd);
+                return examples;
+            }
+            
+            // 2순위: 주계약 예시 (일반적인 패턴 학습)
+            List<UwCodeMappingRow> mainContracts = uwCodeMappingFewShotService.getMainContractExamples(3);
+            if (!mainContracts.isEmpty()) {
+                examples.addAll(mainContracts);
+                log.info("주계약 CSV Few-Shot {} 개 사용", examples.size());
+                return examples;
+            }
+            
+            // 3순위: 랜덤 예시
+            examples = uwCodeMappingFewShotService.getRandomExamples(3);
+            log.info("랜덤 CSV Few-Shot {} 개 사용", examples.size());
+            
+        } catch (Exception e) {
+            log.warn("CSV Few-Shot 조회 실패: {} - {}", insuCd, e.getMessage());
+        }
+        
+        return examples;
+    }
+    
+    /**
+     * CSV Row를 Few-Shot 예시 형식으로 변환
+     */
+    private String buildCsvExample(UwCodeMappingRow row, int exampleNumber) {
+        return String.format("""
+            [CSV 예시 %d - %s]
+            입력:
+            상품코드: %s
+            상품명: %s
+            구분: %s
+            보험기간: %s
+            납입기간: %s
+            가입나이: 남(%s), 여(%s)
+            
+            출력:
+            {
+              "insuTerm": "%s",
+              "payTerm": "%s",
+              "ageRange": "남: %s, 여: %s",
+              "renew": "비갱신형",
+              "specialNotes": "%s - %s (출처: %s)"
+            }
+            """,
+            exampleNumber,
+            row.getProductGroup(),
+            row.getCode(),
+            row.getProductName(),
+            row.getProductGroup(),
+            row.getPeriodLabel(),
+            row.getPayTerm(),
+            row.getEntryAgeM(),
+            row.getEntryAgeF(),
+            row.getPeriodLabel(),
+            row.getPayTerm(),
+            row.getEntryAgeM(),
+            row.getEntryAgeF(),
+            row.getProductGroup(),
+            row.getClassTag(),
+            row.getSrcFile()
+        );
     }
     
     /**

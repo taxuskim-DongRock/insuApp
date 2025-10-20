@@ -112,3 +112,9 @@ public class PythonOcrParsingStrategy implements ParsingStrategy {
 }
 
 
+
+
+
+
+
+
