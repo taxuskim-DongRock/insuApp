@@ -22,7 +22,12 @@ public class CacheConfig {
     
     @Bean
     public CacheManager cacheManager() {
-        CaffeineCacheManager cacheManager = new CaffeineCacheManager("parsingCache");
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager(
+            "parsingCache", 
+            "uwMappingParsingCache",
+            "validationCache",
+            "learningCache"
+        );
         cacheManager.setCaffeine(caffeineCacheBuilder());
         return cacheManager;
     }
