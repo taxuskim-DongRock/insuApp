@@ -4,7 +4,7 @@ import type {
 } from "../types/dto";
 import { httpGet } from "../api/client";
 
-
+//김동록 주석추가
 type Terms = {
   insuTerm?: string | null;     // 보험기간
   payTerm?: string | null;      // 납입기간
