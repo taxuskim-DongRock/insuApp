@@ -4,7 +4,7 @@ import type {
 } from "../types/dto";
 import { httpGet } from "../api/client";
 
-
+//일부수정
 type Terms = {
   insuTerm?: string | null;     // 보험기간
   payTerm?: string | null;      // 납입기간
